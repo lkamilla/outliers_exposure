@@ -7,7 +7,7 @@ from torch.distributions import Beta
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets.main import generate_training_datasets
+from datasets.main import generate_2_dims_training_datasets
 from networks.discriminator import discriminator_nn
 from networks.generator import generator_nn
 
@@ -31,6 +31,7 @@ def gen_loss(gen_point, ground_truth):
 def create_file():
     filename = f"out_{datetime.now().strftime('%Y%m%d-%H%M%S')}.txt"
     file_src = os.path.join("out", filename)
+    file_src=filename
     f = open(file_src, 'x')
     return f
 
@@ -43,7 +44,7 @@ def train(epochs, batch_size, lambda_1, lambda_2, alfa, beta, beta_1, beta_2, le
     discriminator_optimizer = torch.optim.Adam(discriminator_nn.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
     generator_optimizer = torch.optim.Adam(generator_nn.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
     beta_distribution = Beta(torch.tensor([alfa]), torch.tensor([beta]))
-    normal_dataset, outliers_dataset = generate_training_datasets(1000, 40)
+    normal_dataset, outliers_dataset = generate_2_dims_training_datasets(1000, 40)
     normal_trainloader = DataLoader(normal_dataset, shuffle=True, batch_size=batch_size)
     outliers_trainloader = DataLoader(outliers_dataset, batch_size=batch_size, shuffle=True)
     for i in range(epochs):
@@ -97,6 +98,7 @@ def train(epochs, batch_size, lambda_1, lambda_2, alfa, beta, beta_1, beta_2, le
         avg_disc_loss = total_discriminator_loss / (len(normal_trainloader) * len(outliers_trainloader))
         avg_gen_loss = total_generator_loss / (len(normal_trainloader) * len(outliers_trainloader))
 
-        print(f"Epoch: {i + 1} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}")
-        out_file.write(f"Epoch: {i + 1} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}\n")
+        if i % 50 == 0:
+            print(f"Epoch: {i + 1} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}")
+            out_file.write(f"Epoch: {i + 1} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}\n")
     out_file.close()
