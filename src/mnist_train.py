@@ -7,7 +7,7 @@ from torch.distributions import Beta, Uniform
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets.main import generate_mnist_training_datasets
+from datasets.main import generate_mnist_training_datasets, generate_mnist_training_datasets_with_exclude
 from networks.mnist_discriminator import discriminator_nn
 from networks.mnist_generator import generator_nn
 from torchvision.utils import make_grid, save_image
@@ -57,7 +57,7 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
     uniform_distribution = Uniform(0, 1)
     interpolations = uniform_distribution.sample((interpolation_sample_size, 1))
 
-    normal_dataset, outliers_dataset = generate_mnist_training_datasets(batch_size*4,batch_size*2)
+    normal_dataset, outliers_dataset = generate_mnist_training_datasets_with_exclude(batch_size*1,batch_size*1)
     normal_trainloader = DataLoader(normal_dataset, shuffle=True, batch_size=batch_size)
     outliers_trainloader = DataLoader(outliers_dataset, batch_size=batch_size, shuffle=True)
     avg_disc_loss = 0
@@ -105,8 +105,8 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
 def save_images(normal_dataset, outliers_dataset, filename, d_error, g_error):
     generator_nn.eval()
     discriminator_nn.eval()
-    normal_data = normal_dataset[10:15]
-    outlier = outliers_dataset[15]
+    normal_data = normal_dataset[:5]
+    outlier = outliers_dataset[0]
     interpolations = torch.arange(0, 1.1, step=0.1)
     generated_outliers = []
     with torch.no_grad():
@@ -125,7 +125,7 @@ def save_images(normal_dataset, outliers_dataset, filename, d_error, g_error):
         img_arr = img.detach().numpy().reshape(28, 28)
         ax.imshow(img_arr)
         ax.set_title(title, fontsize=6)
-    src = os.path.join('..', 'out', filename)
+    src = os.path.join('out', filename)
     plt.suptitle(f"D error: {d_error}, G error {g_error}")
     plt.savefig(src)
     generator_nn.train()

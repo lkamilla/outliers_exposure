@@ -9,9 +9,11 @@ mnist_dataset = datasets.MNIST('MNIST/', download=True, train=True, transform=tr
 
 
 class CustomMNISTDataset(Dataset):
-
-    def __init__(self, sample_size, label):
-        mask = mnist_dataset.targets == label
+    def __init__(self, sample_size, label, exclude=False):
+        if exclude:
+            mask = mnist_dataset.targets != label
+        else:
+            mask = mnist_dataset.targets == label
         self.sample_size = min(sample_size, len(mask))
         self.data = mnist_dataset.data[mask][:self.sample_size]
 

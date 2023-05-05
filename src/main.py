@@ -1,6 +1,5 @@
 from train import train
 from mnist_train import train as train_on_mnist
-from networks.resnet_generator import generator_nn
 
 import click
 

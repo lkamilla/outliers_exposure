@@ -8,3 +8,7 @@ def generate_2_dims_training_datasets(normal_sample_size, outliers_sample_size):
 
 def generate_mnist_training_datasets(normal_sample_size, outliers_sample_size):
     return CustomMNISTDataset(normal_sample_size, 1), CustomMNISTDataset(outliers_sample_size, 8)
+
+
+def generate_mnist_training_datasets_with_exclude(normal_sample_size, outliers_sample_size):
+    return CustomMNISTDataset(normal_sample_size, 1), CustomMNISTDataset(outliers_sample_size, 1, exclude=True)

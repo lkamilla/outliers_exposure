@@ -49,4 +49,5 @@ class MNISTGenerator(nn.Module):
         return x4
 
 
+
 generator_nn = MNISTGenerator(33)
