@@ -67,6 +67,8 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
         total_generator_loss = 0.0
 
         for normal_data in tqdm(normal_trainloader):
+
+        for normal_data in tqdm(normal_trainloader):
             for outlier in outliers_trainloader:
                 generator_input = torch.cat((normal_data, outlier), dim=1)
                 disc_batch_loss = 0
@@ -98,7 +100,7 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
             out_file.write(f"Epoch: {i} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}\n")
             save_images(normal_dataset, outliers_dataset, f"{filename}_epoch_{i}.pdf", avg_disc_loss, avg_gen_loss)
     out_file.close()
-    save_images(dataset, f"{filename}.pdf", avg_disc_loss, avg_gen_loss)
+    save_images(normal_dataset, outliers_dataset, f"{filename}.pdf", avg_disc_loss, avg_gen_loss)
 
 
 def save_images(normal_dataset, outliers_dataset, filename, d_error, g_error):
@@ -124,7 +126,7 @@ def save_images(normal_dataset, outliers_dataset, filename, d_error, g_error):
         img_arr = img.detach().numpy().reshape(28, 28)
         ax.imshow(img_arr)
         ax.set_title(title, fontsize=6)
-    src = os.path.join('..', 'out', filename)
+    src = os.path.join('out', filename)
     plt.suptitle(f"D error: {d_error}, G error {g_error}")
     plt.savefig(src)
     generator_nn.train()

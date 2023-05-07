@@ -1,5 +1,5 @@
-from train import train
-from mnist_train import train as train_on_mnist
+# from train import train
+# from mnist_train import train as train_on_mnist
 
 import click
 
@@ -8,6 +8,7 @@ import click
 ################################################################################
 import torch
 import time
+from mnist_train_mixup import train
 
 
 
@@ -25,15 +26,16 @@ import time
 
 def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset):
     torch.manual_seed(42)
-    if dataset == 'default':
-        train(n_epochs, batch_size, lambda_one, lambda_two, 0.5, 0.5, 0.99, lr)
-    else:
-        train_on_mnist(n_epochs, batch_size, lambda_one, lambda_two, 0.2, 0.5, 0.99, lr, 100)
-
-        # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 50)
-        # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 100)
-        # train_on_mnist(n_epochs, batch_size, 0.005, 0.005, 0.2, 0.5, 0.99, 0.002, 1000)
-        # train_on_mnist(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
+    # if dataset == 'default':
+    #     train(n_epochs, batch_size, lambda_one, lambda_two, 0.5, 0.5, 0.99, lr)
+    # else:
+    #     train_on_mnist(n_epochs, batch_size, lambda_one, lambda_two, 0.2, 0.5, 0.99, lr, 100)
+    #
+    #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 50)
+    #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 100)
+    #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.005, 0.2, 0.5, 0.99, 0.002, 1000)
+    #     # train_on_mnist(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
+    train(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
 
 
 if __name__ == '__main__':

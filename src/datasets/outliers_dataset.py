@@ -1,6 +1,6 @@
 from torch.distributions import Gamma, Beta
 from torch.utils.data import Dataset
-import torchvision
+
 
 class OutliersDataset(Dataset):
 
