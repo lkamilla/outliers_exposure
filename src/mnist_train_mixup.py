@@ -1,5 +1,7 @@
 import os.path
+import uuid
 from datetime import datetime
+from pathlib import Path
 
 import torch
 from torch import nn
@@ -45,8 +47,29 @@ def create_file():
     return f
 
 
+def create_dir(normal_dataset_size: int, outliers_dataset_size: int, lambda_one: float, lambda_two: float,
+               interpolation_size: int, lr: float, epochs: int):
+    path = os.path.join("out", str(uuid.uuid4()))
+    Path(path).mkdir(exist_ok=True, parents=True)
+    params_filename = os.path.join(path, "params.txt")
+    with open(params_filename, "x") as params_file:
+        params_file.write(f"Size of normal dataset: {normal_dataset_size}\n"
+                          f"Number of outliers: {outliers_dataset_size}\n"
+                          f"Interpolation sample size: {interpolation_size}\n"
+                          f"lambda_1: {lambda_one}\n"
+                          f"lambda_2: {lambda_two}\n"
+                          f"Learning rate: {lr}\n"
+                          f"Epochs: {epochs}")
+    return path
+
+
+
+
 def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learning_rate, interpolation_sample_size):
-    dataset = CustomMixedMNISTDataset(batch_size * 5, 1, 1, 2)
+    normal_dataset_size = batch_size * 2
+    outliers_dataset_size = 1
+    path = create_dir(normal_dataset_size, outliers_dataset_size, lambda_1, lambda_2, interpolation_sample_size, learning_rate, epochs)
+    dataset = CustomMixedMNISTDataset(normal_dataset_size, outliers_dataset_size, 1, 2)
     discriminator_nn.apply(weights_init)
     generator_nn.apply(weights_init)
     discriminator_optimizer = torch.optim.Adam(discriminator_nn.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
@@ -72,7 +95,7 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
             discriminator_optimizer.step()
             generated_total_outlier = generator_nn(data, torch.ones(batch_size, 1))
             generated_total_normal = generator_nn(data, torch.zeros(batch_size, 1))
-            gen_loss_outlier_value = gen_loss(generated_total_outlier, data[:, 0, :, :])
+            gen_loss_outlier_value = gen_loss(generated_total_outlier, data[:, 1, :, :])
             gen_loss_normal_value = gen_loss(generated_total_normal, data[:, 0, :, :])
             gen_loss_value = gen_loss_normal_value * lambda_1 + gen_loss_outlier_value * lambda_2
             gen_loss_value.backward()
@@ -83,12 +106,13 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
         avg_disc_loss = total_discriminator_loss / len(trainloader)
         avg_gen_loss = total_generator_loss / (len(trainloader))
 
-        if True:
+        if i % 10 == 0:
             print(f"Epoch: {i} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}")
-            save_images(dataset, f"output.pdf", avg_disc_loss, avg_gen_loss)
+            save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
 
+        save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
 
-def save_images(dataset, filename, d_error, g_error):
+def save_images(dataset, src, d_error, g_error):
     generator_nn.eval()
     discriminator_nn.eval()
     interpolations = torch.arange(0, 1.1, step=0.1)
@@ -111,7 +135,6 @@ def save_images(dataset, filename, d_error, g_error):
         img_arr = img.detach().numpy().reshape(28, 28)
         ax.imshow(img_arr)
         ax.set_title(title, fontsize=6)
-    src = os.path.join('..', 'out', filename)
     plt.suptitle(f"D error: {d_error}, G error {g_error}")
     plt.savefig(src)
     generator_nn.train()

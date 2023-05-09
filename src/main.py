@@ -35,7 +35,7 @@ def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset):
     #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 100)
     #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.005, 0.2, 0.5, 0.99, 0.002, 1000)
     #     # train_on_mnist(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
-    train(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
+    train(n_epochs, batch_size, 0.0015, 0.085, 0.2, 0.5, 0.99, 0.002, 100)
 
 
 if __name__ == '__main__':
