@@ -22,9 +22,10 @@ from mnist_train_mixup import train
 @click.option('--lambda_one', type=float, default=0.5, help='Lambda 1 in loss function')
 @click.option('--lambda_two', type=float, default=0.5, help='Lambda 2 in loss function')
 @click.option('--dataset', type=str, default='default', help='Which dataset train on')
+@click.option('--outliers_num', type=int, default=1, help='how many outliers')
 
 
-def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset):
+def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset, outliers_num):
     torch.manual_seed(42)
     # if dataset == 'default':
     #     train(n_epochs, batch_size, lambda_one, lambda_two, 0.5, 0.5, 0.99, lr)
@@ -35,7 +36,7 @@ def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset):
     #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 100)
     #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.005, 0.2, 0.5, 0.99, 0.002, 1000)
     #     # train_on_mnist(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
-    train(n_epochs, batch_size, 0.0015, 0.085, 0.2, 0.5, 0.99, 0.002, 100)
+    train(n_epochs, batch_size, outliers_num, 0.05, 0.05, 0.2, 0.5, 0.99, 0.002, 100)
 
 
 if __name__ == '__main__':

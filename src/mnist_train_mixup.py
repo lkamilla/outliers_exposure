@@ -65,9 +65,8 @@ def create_dir(normal_dataset_size: int, outliers_dataset_size: int, lambda_one:
 
 
 
-def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learning_rate, interpolation_sample_size):
+def train(epochs, batch_size, outliers_dataset_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learning_rate, interpolation_sample_size):
     normal_dataset_size = batch_size * 2
-    outliers_dataset_size = 1
     path = create_dir(normal_dataset_size, outliers_dataset_size, lambda_1, lambda_2, interpolation_sample_size, learning_rate, epochs)
     dataset = CustomMixedMNISTDataset(normal_dataset_size, outliers_dataset_size, 1, 2)
     discriminator_nn.apply(weights_init)
@@ -110,7 +109,7 @@ def train(epochs, batch_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learnin
             print(f"Epoch: {i} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}")
             save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
 
-        save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
+    save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
 
 def save_images(dataset, src, d_error, g_error):
     generator_nn.eval()
