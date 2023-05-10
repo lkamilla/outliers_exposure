@@ -1,0 +1,7 @@
+Size of normal dataset: 256
+Number of outliers: 10
+Interpolation sample size: 100
+lambda_1: 0.05
+lambda_2: 0.05
+Learning rate: 0.002
+Epochs: 120
