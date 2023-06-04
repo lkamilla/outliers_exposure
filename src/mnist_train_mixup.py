@@ -16,6 +16,7 @@ from torchvision.utils import make_grid, save_image
 from matplotlib import pyplot as plt
 
 from datasets.mixed_dataset import CustomMixedMNISTDataset
+from torch.optim.lr_scheduler import MultiStepLR
 
 
 def weights_init(m):
@@ -49,7 +50,8 @@ def create_file():
 
 def create_dir(normal_dataset_size: int, outliers_dataset_size: int, lambda_one: float, lambda_two: float,
                interpolation_size: int, lr: float, epochs: int):
-    path = os.path.join("out", str(uuid.uuid4()))
+    current_date = datetime.utcnow().strftime('%Y%m%d-%H%M%S')
+    path = os.path.join("out", current_date)
     Path(path).mkdir(exist_ok=True, parents=True)
     params_filename = os.path.join(path, "params.txt")
     with open(params_filename, "x") as params_file:
@@ -63,25 +65,28 @@ def create_dir(normal_dataset_size: int, outliers_dataset_size: int, lambda_one:
     return path
 
 
-
-
-def train(epochs, batch_size, outliers_dataset_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learning_rate, interpolation_sample_size):
-    normal_dataset_size = batch_size * 2
+def train(epochs, batch_size, outliers_dataset_size, lambda_1, lambda_2, alpha, beta_1, beta_2, learning_rate,
+          interpolation_sample_size, normal_dataset_size):
+    torch.manual_seed(0)
     path = create_dir(normal_dataset_size, outliers_dataset_size, lambda_1, lambda_2, interpolation_sample_size, learning_rate, epochs)
     dataset = CustomMixedMNISTDataset(normal_dataset_size, outliers_dataset_size, 1, 2)
     discriminator_nn.apply(weights_init)
     generator_nn.apply(weights_init)
     discriminator_optimizer = torch.optim.Adam(discriminator_nn.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
     generator_optimizer = torch.optim.Adam(generator_nn.parameters(), lr=learning_rate, betas=(beta_1, beta_2))
-    uniform_distribution = Uniform(0, 1)
-    interpolations = uniform_distribution.sample((interpolation_sample_size, 1))
+    discriminator_scheduler = MultiStepLR(discriminator_optimizer, milestones=[50, 130])
+    generator_scheduler = MultiStepLR(generator_optimizer, milestones=[80])
+
+    interpolation_distribution = Uniform(0, 1)
+
     trainloader = DataLoader(dataset, shuffle=True, batch_size=batch_size)
     avg_disc_loss = 0
     avg_gen_loss = 0
-    for i in range(1, epochs + 1):
+    for i in tqdm(range(1, epochs + 1)):
         total_discriminator_loss = 0.0
         total_generator_loss = 0.0
         for data in trainloader:
+            interpolations = interpolation_distribution.sample((interpolation_sample_size, 1))
             disc_batch_loss = 0.0
             for interpolation in interpolations:
                 interpolation_batch = torch.ones(batch_size, 1) * interpolation
@@ -105,11 +110,16 @@ def train(epochs, batch_size, outliers_dataset_size, lambda_1, lambda_2, alpha, 
         avg_disc_loss = total_discriminator_loss / len(trainloader)
         avg_gen_loss = total_generator_loss / (len(trainloader))
 
+        #discriminator_scheduler.step()
+        generator_scheduler.step()
+
+
         if i % 10 == 0:
-            print(f"Epoch: {i} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss}")
+            print(f"Epoch: {i} | D: loss {avg_disc_loss} | G: loss {avg_gen_loss} | lr: {discriminator_scheduler.get_last_lr()}")
             save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
 
     save_images(dataset, os.path.join(path, f"epoch_{i}.pdf"), avg_disc_loss, avg_gen_loss)
+
 
 def save_images(dataset, src, d_error, g_error):
     generator_nn.eval()
@@ -138,5 +148,6 @@ def save_images(dataset, src, d_error, g_error):
     plt.savefig(src)
     generator_nn.train()
     discriminator_nn.train()
+    plt.close()
 
 

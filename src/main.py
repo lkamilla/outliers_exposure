@@ -23,10 +23,11 @@ from mnist_train_mixup import train
 @click.option('--lambda_two', type=float, default=0.5, help='Lambda 2 in loss function')
 @click.option('--dataset', type=str, default='default', help='Which dataset train on')
 @click.option('--outliers_num', type=int, default=1, help='how many outliers')
+@click.option('--normal_dataset_size', type=int, default=128, help='how many samples in normal dataset')
+@click.option('--interpolations_num', type=int, default=100, help='how many interpolations')
 
-
-def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset, outliers_num):
-    torch.manual_seed(42)
+def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset, outliers_num, normal_dataset_size, interpolations_num):
+    torch.manual_seed(0)
     # if dataset == 'default':
     #     train(n_epochs, batch_size, lambda_one, lambda_two, 0.5, 0.5, 0.99, lr)
     # else:
@@ -36,7 +37,7 @@ def main(lr, n_epochs, batch_size, lambda_one, lambda_two, dataset, outliers_num
     #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.001, 0.2, 0.5, 0.99, 0.002, 100)
     #     # train_on_mnist(n_epochs, batch_size, 0.005, 0.005, 0.2, 0.5, 0.99, 0.002, 1000)
     #     # train_on_mnist(n_epochs, batch_size, 0.001, 0.002, 0.2, 0.5, 0.99, 0.002, 1000)
-    train(n_epochs, batch_size, outliers_num, 0.05, 0.05, 0.2, 0.5, 0.99, 0.002, 100)
+    train(n_epochs, batch_size, outliers_num, 0.05, 0.05, 1.0, 0.5, 0.99, lr, interpolations_num, normal_dataset_size=normal_dataset_size)
 
 
 if __name__ == '__main__':

@@ -15,11 +15,17 @@ class CustomMixedMNISTDataset(Dataset):
         else:
             mask = mnist_dataset.targets == normal_label
         self.__normal_sample_size = min(normal_sample_size, len(mask))
-        self.__normal_data = mnist_dataset.data[mask][:self.__normal_sample_size]
+        normal_data = mnist_dataset.data[mask]
+        normal_data_indices = torch.randperm(self.__normal_sample_size)
+        #self.__normal_data = mnist_dataset.data[mask][:self.__normal_sample_size]
+        # self.__normal_data = normal_data[normal_data_indices]
         mask = mnist_dataset.targets == outlier_label
         self.__outliers_sample_size = min(outlier_sample_size, len(mask))
-        self.__outliers_data = mnist_dataset.data[mask][:self.__outliers_sample_size]
-        self.data = self.__mix()
+        outliers_data = mnist_dataset.data[mask]
+        outliers_indices = torch.randperm(self.__outliers_sample_size)
+        # self.__outliers_data = mnist_dataset.data[mask][:self.__outliers_sample_size]
+        self.data = self.__shuffle(outliers_data, normal_data)
+        # self.data = self.__mix()
 
     def __mix(self):
         tensor1_repeated = self.__normal_data.unsqueeze(1).repeat(1, self.__outliers_sample_size, 1, 1)
@@ -32,6 +38,16 @@ class CustomMixedMNISTDataset(Dataset):
 
         # Reshape the output tensor to shape (m*n, 2, 28, 28)
         output = output.view(self.__normal_sample_size * self.__outliers_sample_size, 2, 28, 28)
+        return output
+
+    def __shuffle(self, outliers_data, normal_data):
+        normal_indices = torch.randperm(self.__normal_sample_size)
+        normal_digits = normal_data[:self.__normal_sample_size]
+
+        outliers_shuffle_indices = torch.randint(0, self.__outliers_sample_size, (self.__normal_sample_size,))
+        outliers_shuffled = outliers_data[:self.__outliers_sample_size][outliers_shuffle_indices]
+
+        output = torch.stack((normal_digits, outliers_shuffled), dim=1)
         return output
 
     def __len__(self):
